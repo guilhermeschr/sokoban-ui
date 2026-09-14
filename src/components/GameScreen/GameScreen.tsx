@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSokoban } from '../hooks/useSokoban';
-import type { Direction, LevelDefinition, LevelProgress, LevelRecord } from '../game/types';
-import { Board } from './Board';
-import { Sidebar } from './Sidebar';
-import { WinModal } from './WinModal';
-import { RankingsModal } from './RankingsModal';
-import { Header } from './Header';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSokoban } from '../../hooks/useSokoban.ts';
+import type { Direction, LevelDefinition, LevelProgress, LevelRecord } from '../../game/types.ts';
+import { parseLevel } from '../../game/engine.ts';
+import { solve } from '../../game/solver.ts';
+import { Board } from '../Board/Board.tsx';
+import { Sidebar } from '../Sidebar/Sidebar.tsx';
+import { WinModal } from '../Modal/WinModal.tsx';
+import { RankingsModal } from '../Modal/RankingsModal.tsx';
+import { AnalysisModal } from '../Modal/AnalysisModal.tsx';
+import { SolutionModal } from '../Modal/SolutionModal.tsx';
+import { Header } from '../Header/Header.tsx';
 import './GameScreen.css';
 
 const KEY_MAP: Record<string, Direction> = {
@@ -44,7 +48,7 @@ export function GameScreen({
   onBackToLevels,
   onNextLevel,
 }: GameScreenProps) {
-  const [showRankings, setShowRankings] = useState(false);
+  const [activeModal, setActiveModal] = useState<'ranking' | 'analysis' | 'solution' | null>(null);
   const previousBestRef = useRef<number | undefined>(getProgress(level.id).bestMoves);
   const [winInfo, setWinInfo] = useState<{ moves: number; timeMs: number; isNewRecord: boolean } | null>(
     null,
@@ -53,7 +57,7 @@ export function GameScreen({
   useEffect(() => {
     previousBestRef.current = getProgress(level.id).bestMoves;
     setWinInfo(null);
-    setShowRankings(false);
+    setActiveModal(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level.id]);
 
@@ -75,6 +79,7 @@ export function GameScreen({
       if (event.repeat) return;
       const target = event.target as HTMLElement | null;
       if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
+      if (status === 'won' || activeModal !== null) return;
 
       if (event.key in KEY_MAP) {
         event.preventDefault();
@@ -102,10 +107,13 @@ export function GameScreen({
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handleMove, undo, restart, onBackToLevels]);
+  }, [activeModal, handleMove, restart, status, undo, onBackToLevels]);
 
   const progress = getProgress(level.id);
   const rankings = getRankings(level.id);
+  // O A* é executado uma vez por nível; a sequência resultante é reutilizada ao
+  // abrir o modal para não recalcular nem depender da posição atual do jogador.
+  const solution = useMemo(() => solve(parseLevel(level)), [level]);
 
   return (
     <div className="screen">
@@ -127,11 +135,12 @@ export function GameScreen({
           onUndo={undo}
           onRestart={restart}
           onNextLevel={onNextLevel}
-          onShowRankings={() => setShowRankings(true)}
+          onShowRankings={() => setActiveModal('ranking')}
+          onShowSolution={() => setActiveModal('solution')}
         />
       </main>
 
-      {status === 'won' && winInfo && (
+      {status === 'won' && winInfo && activeModal === null && (
         <WinModal
           levelName={level.name}
           moves={winInfo.moves}
@@ -141,16 +150,36 @@ export function GameScreen({
           hasNextLevel={hasNextLevel}
           onRepeat={restart}
           onBackToLevels={onBackToLevels}
+          onShowRankings={() => setActiveModal('ranking')}
           onNextLevel={onNextLevel}
         />
       )}
 
-      {showRankings && (
+      {activeModal === 'ranking' && (
         <RankingsModal
           levelName={level.name}
           byTime={rankings.byTime}
           byMoves={rankings.byMoves}
-          onClose={() => setShowRankings(false)}
+          onShowAnalysis={() => setActiveModal('analysis')}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
+
+      {activeModal === 'analysis' && (
+        <AnalysisModal
+          levelName={level.name}
+          history={progress.history}
+          onBackToRanking={() => setActiveModal('ranking')}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
+
+      {activeModal === 'solution' && (
+        <SolutionModal
+          level={level}
+          levelName={level.name}
+          solution={solution}
+          onClose={() => setActiveModal(null)}
         />
       )}
     </div>

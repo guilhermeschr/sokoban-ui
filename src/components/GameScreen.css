@@ -1,9 +1,0 @@
-.game-screen {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 24px;
-  padding: 28px;
-  flex-wrap: wrap;
-}

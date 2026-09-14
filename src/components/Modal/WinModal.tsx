@@ -1,4 +1,5 @@
-import { formatMoves, formatTime } from '../utils/format';
+import { useEffect } from 'react';
+import { formatMoves, formatTime } from '../../utils/format.ts';
 import './Modal.css';
 
 interface WinModalProps {
@@ -10,6 +11,7 @@ interface WinModalProps {
   hasNextLevel: boolean;
   onRepeat: () => void;
   onBackToLevels: () => void;
+  onShowRankings: () => void;
   onNextLevel: () => void;
 }
 
@@ -22,8 +24,38 @@ export function WinModal({
   hasNextLevel,
   onRepeat,
   onBackToLevels,
+  onShowRankings,
   onNextLevel,
 }: WinModalProps) {
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.repeat) return;
+      const target = event.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
+
+      const key = event.key.toLowerCase();
+      if (key === 'v') {
+        event.preventDefault();
+        onShowRankings();
+      } else if (key === 'n') {
+        event.preventDefault();
+        onBackToLevels();
+      } else if (key === 'r') {
+        event.preventDefault();
+        onRepeat();
+      } else if (key === 'escape') {
+        event.preventDefault();
+        onBackToLevels();
+      } else if (key === 'enter' || key === 'return') {
+        event.preventDefault();
+        if (hasNextLevel) onNextLevel();
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [hasNextLevel, onBackToLevels, onNextLevel, onRepeat, onShowRankings]);
+
   return (
     <div className="modal-overlay">
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="win-modal-title">
@@ -56,6 +88,9 @@ export function WinModal({
           </button>
           <button type="button" className="btn" onClick={onBackToLevels}>
             Níveis
+          </button>
+          <button type="button" className="btn" onClick={onShowRankings}>
+            Ver Ranking
           </button>
           <button
             type="button"

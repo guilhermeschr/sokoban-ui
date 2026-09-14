@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { LEVELS } from './game/levels';
 import { useRecords } from './hooks/useRecords';
-import { LevelSelect } from './components/LevelSelect';
-import { GameScreen } from './components/GameScreen';
+import { LevelSelect } from './components/LevelSelect/LevelSelect.tsx';
+import { GameScreen } from './components/GameScreen/GameScreen.tsx';
 
 type Screen = { name: 'select' } | { name: 'game'; levelIndex: number };
 

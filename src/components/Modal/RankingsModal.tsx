@@ -1,15 +1,35 @@
-import type { LevelRecord } from '../game/types';
-import { formatDate, formatMoves, formatTime } from '../utils/format';
+import { useEffect } from 'react';
+import type { LevelRecord } from '../../game/types.ts';
+import { formatDate, formatMoves, formatTime } from '../../utils/format.ts';
 import './Modal.css';
 
 interface RankingsModalProps {
   levelName: string;
   byTime: LevelRecord[];
   byMoves: LevelRecord[];
+  onShowAnalysis: () => void;
   onClose: () => void;
 }
 
-export function RankingsModal({ levelName, byTime, byMoves, onClose }: RankingsModalProps) {
+export function RankingsModal({ levelName, byTime, byMoves, onShowAnalysis, onClose }: RankingsModalProps) {
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.repeat) return;
+
+      const key = event.key.toLowerCase();
+      if (key === 'a') {
+        event.preventDefault();
+        onShowAnalysis();
+      } else if (key === 'escape') {
+        event.preventDefault();
+        onClose();
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose, onShowAnalysis]);
+
   return (
     <div className="modal-overlay">
       <div className="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="ranking-modal-title">
@@ -24,6 +44,9 @@ export function RankingsModal({ levelName, byTime, byMoves, onClose }: RankingsM
         </div>
 
         <div className="modal__actions">
+          <button type="button" className="btn" onClick={onShowAnalysis}>
+            Analisar evolução
+          </button>
           <button type="button" className="btn btn--primary" onClick={onClose}>
             Fechar
           </button>

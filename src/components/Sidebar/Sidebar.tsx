@@ -1,4 +1,4 @@
-import { formatMoves, formatTime } from '../utils/format';
+import { formatMoves, formatTime } from '../../utils/format.ts';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -17,6 +17,7 @@ interface SidebarProps {
   onRestart: () => void;
   onNextLevel: () => void;
   onShowRankings: () => void;
+  onShowSolution: () => void;
 }
 
 export function Sidebar({
@@ -35,6 +36,7 @@ export function Sidebar({
   onRestart,
   onNextLevel,
   onShowRankings,
+  onShowSolution,
 }: SidebarProps) {
   return (
     <aside className="sidebar">
@@ -88,6 +90,10 @@ export function Sidebar({
 
       <button type="button" className="btn btn--block" onClick={onShowRankings}>
         Ver Ranking
+      </button>
+
+      <button type="button" className="btn btn--primary btn--block" onClick={onShowSolution}>
+        Ver solução ótima
       </button>
 
       <div className="sidebar__controls">

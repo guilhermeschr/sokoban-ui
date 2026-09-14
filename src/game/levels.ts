@@ -6,7 +6,11 @@ export const LEVELS: LevelDefinition[] = [
   {
     id: 'nivel-1',
     name: 'Primeiro Empurrão',
-    rows: ['#####', '#@$.#', '#####'],
+    rows: [
+      '#####',
+      '#@$.#',
+      '#####',
+    ],
   },
   {
     id: 'nivel-2',
@@ -35,8 +39,114 @@ export const LEVELS: LevelDefinition[] = [
       '########',
     ],
   },
+  {
+    id: 'nivel-4',
+    name: 'Linha Dupla',
+    rows: [
+      '########',
+      '#   .  #',
+      '#   $  #',
+      '#   $  #',
+      '#  @   #',
+      '#   .  #',
+      '########',
+    ],
+  },
+  {
+    id: 'nivel-5',
+    name: 'Separação',
+    rows: [
+      '########',
+      '#      #',
+      '# $$   #',
+      '#  ##. #',
+      '#   .@ #',
+      '#      #',
+      '########',
+    ],
+  },
+  {
+    id: 'nivel-6',
+    name: 'Três Caixas',
+    rows: [
+      '#########',
+      '#       #',
+      '# $ $   #',
+      '#   #   #',
+      '# $ # . #',
+      '#   . @ #',
+      '#       #',
+      '#########',
+    ],
+  },
+  {
+    id: 'nivel-7',
+    name: 'O Obstáculo',
+    rows: [
+      '#########',
+      '# .     #',
+      '# $ $   #',
+      '#   #   #',
+      '#   # . #',
+      '# @     #',
+      '#########',
+    ],
+  },
+  {
+    id: 'nivel-8',
+    name: 'Corredor',
+    rows: [
+      '##########',
+      '# .      #',
+      '# $ ###  #',
+      '#   #    #',
+      '# $ # $  #',
+      '#   # .  #',
+      '# @   .  #',
+      '##########',
+    ],
+  },
+  {
+    id: 'nivel-9',
+    name: 'Quatro Caixas',
+    rows: [
+      '#########',
+      '# . .   #',
+      '# $ $   #',
+      '#   #   #',
+      '#   #   #',
+      '# $ $   #',
+      '# @   . #',
+      '#########',
+    ],
+  },
+  {
+    id: 'nivel-10',
+    name: 'Pequeno Labirinto',
+    rows: [
+      '##########',
+      '# .  .   #',
+      '# $###   #',
+      '#     #  #',
+      '#  $  #  #',
+      '#  @     #',
+      '##########',
+    ],
+  },{
+    id: 'nivel-11',
+    name: 'Labirinto Compacto',
+    rows: [
+      '##############',
+      '# .  #   .   #',
+      '# $  #  $    #',
+      '#    ##      #',
+      '# .   $  .   #',
+      '# ##   ## $  #',
+      '# @          #',
+      '##############',
+    ],
+  },
 ];
-
 export function getLevelIndexById(id: string): number {
   return LEVELS.findIndex((level) => level.id === id);
 }

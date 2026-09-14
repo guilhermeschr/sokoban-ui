@@ -12,7 +12,6 @@ export function Header({ completedCount, totalLevels, onOpenLevels, showLevelsBu
     <header className="app-header">
       <div className="app-header__brand">
         <span className="app-header__title">SOKOBAN</span>
-        <span className="app-header__subtitle">Depósito Modular</span>
       </div>
       <div className="app-header__actions">
         <span className="app-header__progress">

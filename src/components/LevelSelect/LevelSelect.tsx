@@ -1,6 +1,6 @@
-import { LEVELS } from '../game/levels';
-import type { LevelProgress } from '../game/types';
-import { Header } from './Header';
+import { LEVELS } from '../../game/levels.ts';
+import type { LevelProgress } from '../../game/types.ts';
+import { Header } from '../Header/Header.tsx';
 import './LevelSelect.css';
 
 interface LevelSelectProps {
@@ -15,7 +15,6 @@ export function LevelSelect({ getProgress, completedCount, onSelectLevel }: Leve
       <Header completedCount={completedCount} totalLevels={LEVELS.length} showLevelsButton={false} />
       <main className="level-select">
         <h1 className="level-select__title">Selecionar Nível</h1>
-        <p className="level-select__hint">Recorde = menor número de movimentos</p>
 
         <div className="level-grid">
           {LEVELS.map((level, index) => {
