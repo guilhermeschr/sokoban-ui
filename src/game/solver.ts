@@ -4,12 +4,14 @@ import { isWin, key, move } from './engine';
 import type { Direction, GameState, Position } from './types';
 
 /** Limite de segurança para que uma busca excepcionalmente grande não congele a interface. */
-export const DEFAULT_MAX_EXPANDED_NODES = 200_000_000;
+export const DEFAULT_MAX_EXPANDED_NODES = 200_000;
 
-export type SolutionResult =
+type SearchResult =
   | { status: 'solved'; directions: Direction[]; expandedNodes: number }
   | { status: 'unsolved'; expandedNodes: number }
   | { status: 'limit-reached'; expandedNodes: number };
+
+export type SolutionResult = SearchResult & { searchTimeMs: number };
 
 interface SearchNode {
   state: GameState;
@@ -67,6 +69,16 @@ export function solve(
   initialState: GameState,
   maxExpandedNodes = DEFAULT_MAX_EXPANDED_NODES,
 ): SolutionResult {
+  const startedAt = globalThis.performance.now();
+  const result = solveSearch(initialState, maxExpandedNodes);
+
+  return { ...result, searchTimeMs: globalThis.performance.now() - startedAt };
+}
+
+function solveSearch(
+  initialState: GameState,
+  maxExpandedNodes = DEFAULT_MAX_EXPANDED_NODES,
+): SearchResult {
   if (isWin(initialState)) {
     return { status: 'solved', directions: [], expandedNodes: 0 };
   }

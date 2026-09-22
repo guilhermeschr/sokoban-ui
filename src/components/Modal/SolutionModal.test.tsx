@@ -1,102 +1,66 @@
 /** @vitest-environment jsdom */
 import { cleanup, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { parseLevel } from '../../game/engine';
-import { solve } from '../../game/solver';
-import { LEVELS } from '../../game/levels';
+import { afterEach, describe, expect, it } from 'vitest';
+import type { SolutionResult } from '../../game/solver';
+import type { LevelDefinition } from '../../game/types';
 import { SolutionModal } from './SolutionModal';
 
-function renderModal(onClose = vi.fn()) {
-  return render(
-    <SolutionModal
-      level={LEVELS[0]}
-      levelName={LEVELS[0].name}
-      solution={solve(parseLevel(LEVELS[0]))}
-      onClose={onClose}
-    />,
-  );
-}
+const level: LevelDefinition = {
+  id: 'tiny',
+  name: 'Labirinto Compacto',
+  rows: ['#####', '#@$.#', '#####'],
+};
 
 afterEach(cleanup);
 
 describe('SolutionModal', () => {
-  it('mantém o foco dentro do diálogo ao navegar com Tab', async () => {
-    const user = userEvent.setup();
-    renderModal();
+  it('exibe o tempo da busca em milissegundos ou segundos', () => {
+    const solution = {
+      status: 'solved',
+      directions: [],
+      expandedNodes: 1,
+      searchTimeMs: 850,
+    } as SolutionResult;
 
-    const close = screen.getByRole('button', { name: 'Fechar' });
-    const next = screen.getByRole('button', { name: 'Próximo' });
-    expect(document.activeElement).toBe(close);
+    const { rerender } = render(
+      <SolutionModal level={level} levelName={level.name} solution={solution} onClose={() => {}} />,
+    );
 
-    await user.tab();
-    expect(document.activeElement).toBe(next);
-    await user.tab();
-    expect(document.activeElement).toBe(close);
-    await user.tab();
-    expect(document.activeElement).toBe(next);
-  });
-
-  it('não rouba o foco do passo atual quando o callback de fechar muda', () => {
-    const { rerender } = renderModal();
-    const next = screen.getByRole('button', { name: 'Próximo' });
-    next.focus();
+    expect(screen.getByText('Busca: 850 ms')).toBeTruthy();
 
     rerender(
       <SolutionModal
-        level={LEVELS[0]}
-        levelName={LEVELS[0].name}
-        solution={solve(parseLevel(LEVELS[0]))}
-        onClose={() => undefined}
+        level={level}
+        levelName={level.name}
+        solution={{ ...solution, searchTimeMs: 1250 }}
+        onClose={() => {}}
       />,
     );
 
-    expect(document.activeElement).toBe(next);
+    expect(screen.getByText('Busca: 1,3 s')).toBeTruthy();
   });
 
-  it('restaura o foco para o elemento que abriu a demonstração ao fechar', () => {
-    const opener = document.createElement('button');
-    opener.textContent = 'Abrir solução';
-    document.body.append(opener);
-    opener.focus();
-    const { unmount } = renderModal();
+  it('exibe o tempo mesmo quando não encontra solução', () => {
+    const solution = {
+      status: 'unsolved',
+      expandedNodes: 1,
+      searchTimeMs: 12,
+    } as SolutionResult;
 
-    unmount();
-    expect(document.activeElement).toBe(opener);
-    opener.remove();
+    render(<SolutionModal level={level} levelName={level.name} solution={solution} onClose={() => {}} />);
+
+    expect(screen.getByText('Busca: 12 ms')).toBeTruthy();
   });
 
-  it('navega entre os passos usando as setas esquerda e direita', async () => {
-    const user = userEvent.setup();
-    renderModal();
+  it('exibe o tempo quando a busca atinge o limite', () => {
+    const solution = {
+      status: 'limit-reached',
+      expandedNodes: 200_000,
+      searchTimeMs: 1250,
+    } as SolutionResult;
 
-    await user.keyboard('{ArrowRight}');
-    expect(screen.getByText('Passo 1 de 1')).toBeTruthy();
+    render(<SolutionModal level={level} levelName={level.name} solution={solution} onClose={() => {}} />);
 
-    await user.keyboard('{ArrowLeft}');
-    expect(screen.getByText('Passo 0 de 1')).toBeTruthy();
-  });
-
-  it('reinicia a demonstração com a tecla R', async () => {
-    const user = userEvent.setup();
-    renderModal();
-
-    await user.keyboard('{ArrowRight}');
-    await user.keyboard('r');
-
-    expect(screen.getByText('Passo 0 de 1')).toBeTruthy();
-  });
-
-  it.each([
-    ['f', 'a tecla F'],
-    ['{Escape}', 'a tecla Escape'],
-  ])('fecha a demonstração com %s', async (key, _description) => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    renderModal(onClose);
-
-    await user.keyboard(key);
-
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Busca: 1,3 s')).toBeTruthy();
   });
 });

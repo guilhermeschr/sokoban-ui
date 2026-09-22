@@ -49,8 +49,6 @@ export function SolutionModal({ level, levelName, solution, onClose }: SolutionM
     function onKeyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
 
-      // Os atalhos repetem exatamente os limites dos botões: o passo nunca
-      // passa do início/fim e a demonstração continua independente da partida.
       if (key === 'arrowleft') {
         event.preventDefault();
         setCurrentStep((step) => Math.max(0, step - 1));
@@ -103,9 +101,12 @@ export function SolutionModal({ level, levelName, solution, onClose }: SolutionM
       <div className="modal-overlay">
         <div ref={dialogRef} className="modal modal--solution" role="dialog" aria-modal="true" aria-labelledby="solution-modal-title">
           <p className="modal__eyebrow">Solução ótima</p>
-          <h2 id="solution-modal-title" className="modal__title">
-            {levelName}
-          </h2>
+          <div className="solution-modal__heading">
+            <h2 id="solution-modal-title" className="modal__title">
+              {levelName}
+            </h2>
+            <span className="solution-modal__search-time">Busca: {formatSearchTime(solution.searchTimeMs)}</span>
+          </div>
           <p className="solution-modal__message">
             {solution.status === 'limit-reached'
               ? 'A busca atingiu o limite de segurança antes de encontrar uma solução.'
@@ -129,9 +130,12 @@ export function SolutionModal({ level, levelName, solution, onClose }: SolutionM
     <div className="modal-overlay">
       <div ref={dialogRef} className="modal modal--solution" role="dialog" aria-modal="true" aria-labelledby="solution-modal-title">
         <p className="modal__eyebrow">Solução ótima</p>
-        <h2 id="solution-modal-title" className="modal__title">
-          {levelName}
-        </h2>
+        <div className="solution-modal__heading">
+          <h2 id="solution-modal-title" className="modal__title">
+            {levelName}
+          </h2>
+          <span className="solution-modal__search-time">Busca: {formatSearchTime(solution.searchTimeMs)}</span>
+        </div>
 
         <div className="solution-modal__progress" aria-live="polite">
           <span>Passo {currentStep} de {totalSteps}</span>
@@ -164,6 +168,12 @@ export function SolutionModal({ level, levelName, solution, onClose }: SolutionM
       </div>
     </div>
   );
+}
+
+function formatSearchTime(searchTimeMs: number): string {
+  if (searchTimeMs < 1000) return `${Math.round(searchTimeMs)} ms`;
+
+  return `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(searchTimeMs / 1000)} s`;
 }
 
 function getFocusableElements(dialog: HTMLElement): HTMLElement[] {
